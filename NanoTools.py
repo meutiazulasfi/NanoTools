@@ -7,7 +7,7 @@ import time
 # 1. KONFIGURASI HALAMAN
 # =============================
 st.set_page_config(
-    page_title="NanoTools",
+    page_title="NanoFood Ecosystem",
     page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded"
