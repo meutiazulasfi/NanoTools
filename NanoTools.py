@@ -1,24 +1,24 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import time
+import math
+import pandas as pd # Perlu import pandas untuk grafik dummy
+import numpy as np  # Perlu import numpy untuk grafik dummy
 
 # =============================
-# 1. KONFIGURASI HALAMAN
+# KONFIGURASI HALAMAN
 # =============================
 st.set_page_config(
-    page_title="NanoFood Ecosystem",
+    page_title="NanoTools",
     page_icon="🧬",
-    layout="wide",
+    layout="centered",
     initial_sidebar_state="expanded"
 )
 
 # =============================
-# 2. CSS & TEMA
+# CSS CUSTOM THEME & BACKGROUND
 # =============================
 st.markdown("""
 <style>
-/* Background Animasi Gradient */
+/* Background & Animasi */
 .stApp {
     background: linear-gradient(-45deg, #360185, #8F0177, #DE1A58, #F4B342);
     background-size: 400% 400%;
@@ -29,186 +29,155 @@ st.markdown("""
     50% {background-position: 100% 50%;}
     100% {background-position: 0% 50%;}
 }
-/* Glassmorphism */
-.glass-card {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-    border-radius: 20px;
+/* Card Style */
+div.css-1r6slb0.e1tzin5v2 {
+    background-color: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.card {
+    background: rgba(255, 255, 255, 0.85);
     padding: 25px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    margin-bottom: 20px;
-    color: white;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    margin-bottom: 25px;
 }
-h1, h2, h3, h4, .stMarkdown, p, div { color: white !important; }
-[data-testid="stSidebar"] { background-color: rgba(54, 1, 133, 0.9); }
+.card-header {
+    color: #360185;
+    font-weight: bold;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #DE1A58;
+    padding-bottom: 5px;
+}
+/* Typography */
+h1, h2, h3 {
+    color: #ffffff !important;
+    text-shadow: 2px 2px 4px #000000;
+    text-align: center;
+}
+/* Button */
 .stButton>button {
-    background-color: #F4B342; color: #360185; font-weight: bold; border-radius: 12px; border: none;
+    background-color: #360185;
+    color: white;
+    border-radius: 10px;
+    width: 100%;
 }
-.stButton>button:hover { background-color: #DE1A58; color: white; transform: scale(1.05); }
 </style>
 """, unsafe_allow_html=True)
 
 # =============================
-# 3. KAMUS BAHASA (TRANSLATION)
+# HEADER APLIKASI
 # =============================
-# Ini mengatur teks tombol dan judul
-txt = {
-    "ID": {
-        "nav_title": "Menu Utama",
-        "menu_opts": ["🏠 Tools & Calc", "📊 Insight (Nano)", "📚 Learning", "🤖 Ask Copilot", "👤 About"],
-        "tools_h1": "🛠️ Laboratorium Digital",
-        "tools_sub": "Kumpulan alat hitung untuk Nanoteknologi dan Rekayasa Pangan.",
-        "calc_dilution": "🧪 Kalkulator Pengenceran",
-        "calc_shelf": "📅 Prediksi Umur Simpan (Q10)",
-        "learn_h1": "📚 Pusat Pembelajaran",
-        "learn_sub": "Pilih modul pembelajaran kimia di bawah ini:",
-        "tabs_learn": ["⚗️ Kimia Dasar", "🌿 Kimia Organik", "💎 Kimia Anorganik", "🍞 Kimia Pangan"]
-    },
-    "EN": {
-        "nav_title": "Main Menu",
-        "menu_opts": ["🏠 Tools & Calc", "📊 Insight (Nano)", "📚 Learning", "🤖 Ask Copilot", "👤 About"],
-        "tools_h1": "🛠️ Digital Laboratory",
-        "tools_sub": "Calculation tools for Nanotechnology and Food Engineering.",
-        "calc_dilution": "🧪 Dilution Calculator",
-        "calc_shelf": "📅 Shelf Life Prediction (Q10)",
-        "learn_h1": "📚 Learning Center",
-        "learn_sub": "Select chemistry learning modules below:",
-        "tabs_learn": ["⚗️ Basic Chem", "🌿 Organic Chem", "💎 Inorganic Chem", "🍞 Food Chem"]
-    }
-}
+st.markdown("<h1>🧬 NanoTools <span style='color:#F4B342'>Pro</span></h1>", unsafe_allow_html=True)
+st.markdown("<h3>Integrated System for Nanotech</h3>", unsafe_allow_html=True)
+st.markdown("---")
 
 # =============================
-# 4. SIDEBAR & BAHASA
+# FUNGSI UTILITAS
+# =============================
+def make_card_start():
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+
+def make_card_end():
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# =============================
+# SIDEBAR (NAVIGASI DIPERBAIKI)
 # =============================
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/2021/2021652.png", width=80)
+    st.image("https://cdn-icons-png.flaticon.com/512/3053/3053984.png", width=100)
+    st.title("Menu NanoTools")
     
-    # --- PILIH BAHASA ---
-    lang_choice = st.selectbox("🌐 Language / Bahasa", ["Indonesia", "English"])
-    lang_code = "ID" if lang_choice == "Indonesia" else "EN"
-    t = txt[lang_code] # Memuat kamus berdasarkan bahasa yang dipilih
-    
-    st.markdown("---")
-    st.write(f"**NanoFood Hub** ({lang_code})")
-    
-    selected_menu = st.radio(
-        t["nav_title"],
-        t["menu_opts"],
-        index=0
+    # PERBAIKAN 1: Menambahkan semua opsi menu ke dalam list ini
+    menu = st.radio(
+        "Pilih Menu:",
+        [
+            "📈 Insight",
+            "🔬 Lab Nanoteknologi", 
+            "🛠 Tools",  
+            "👤 About"
+        ]
     )
+    
     st.markdown("---")
-
-# Helper Function
-def make_glass_card(content_func):
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    content_func()
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.info("Aplikasi formulasi nanoteknologi.")
 
 # =============================
-# MENU 1: TOOLS
+# LOGIKA HALAMAN (IF - ELIF)
 # =============================
-if selected_menu == t["menu_opts"][0]: # Tools
-    st.title(t["tools_h1"])
-    st.write(t["tools_sub"])
+
+# 1. MODUL NANOTEKNOLOGI
+if menu == "🔬 Lab Nanoteknologi":
+    st.markdown("## 🧪 Perhitungan Laboratorium")
     
-    tab1, tab2 = st.tabs(["🧬 Nano", "🍽️ Food"])
-    
-    with tab1:
-        make_glass_card(lambda: st.write("Content Nano Calculator here... (Logic retained)"))
-    with tab2:
-        make_glass_card(lambda: st.write("Content Food Calculator here... (Logic retained)"))
+    # Kalkulator Molaritas
+    make_card_start()
+    st.markdown("<div class='card-header'>⚖️ Kalkulator Molaritas</div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        molaritas = st.number_input("Molaritas (M)", 0.0, step=0.1)
+        volume_l = st.number_input("Volume (Liter)", 0.0, step=0.1)
+    with col2:
+        mr = st.number_input("Berat Molekul (MR)", 0.0, step=0.1)
+    if st.button("Hitung Massa"):
+        st.success(f"Massa: **{molaritas * volume_l * mr:.4f} gram**")
+    make_card_end()
 
-# =============================
-# MENU 2: INSIGHT
-# =============================
-elif selected_menu == t["menu_opts"][1]: # Insight
+
+# ==========================================
+# PERBAIKAN 2: Menggunakan variabel 'menu' 
+# dan string biasa, bukan 'selected_menu' 
+# atau 't["..."]' yang error.
+# ==========================================
+
+# 1. MENU INSIGHT
+elif menu == "📈 Insight":
     st.title("🔬 Nanoparticle Insight")
-    # (Kode grafik sama seperti sebelumnya, dipersingkat untuk fokus ke Learning)
-    st.line_chart(pd.DataFrame(np.random.randn(20, 3), columns=['A','B','C']))
+    st.write("Data tren penelitian nanoteknologi terkini.")
+    # Contoh grafik dummy
+    chart_data = pd.DataFrame(np.random.randn(20, 3), columns=['A', 'B', 'C'])
+    st.line_chart(chart_data)
 
-# =============================
-# MENU 3: LEARNING (UPDATE)
-# =============================
-elif selected_menu == t["menu_opts"][2]: # Learning
-    st.title(t["learn_h1"])
-    st.write(t["learn_sub"])
+# 2. LAB NANOTEKNOLOGI
+elif menu == "🛠 Tools":
+    st.title("🛠 Extra Tools")
+    tab1, tab2 = st.tabs(["🧬 Nano Tools", "🍽️ Food Tools"])
+    with tab1:
+        make_card_start()
+        st.write("Kalkulator tambahan Nanoteknologi akan muncul di sini.")
+        make_card_end()
+    with tab2:
+        make_card_start()
+        st.write("Konverter unit pangan akan muncul di sini.")
+        make_card_end()
 
-    # Membuat Tabs sesuai bahasa
-    tabs = st.tabs(t["tabs_learn"])
 
-    # -----------------------------------------------------------
-    # [AREA EDIT MATERI]
-    # Di bawah ini adalah tempat Anda menyisipkan materi pelajaran.
-    # Gunakan format Markdown.
-    # -----------------------------------------------------------
-
-    # TAB 1: KIMIA DASAR
+# 3. TOOLS
+elif menu == "📚 Tools":
+    st.title("📚 Pusat Belajar")
+    tabs = st.tabs(["⚗️ Kimia Dasar", "🌿 Organik", "💎 Anorganik"])
+    
     with tabs[0]:
-        make_glass_card(lambda: st.markdown(
-            """
-            ### ⚗️ Materi Kimia Dasar
-            
-            **Bahasa Indonesia:**
-            * **Stoikiometri:** Perhitungan kuantitas zat dalam reaksi kimia.
-            * **Hukum Lavoisier:** Massa zat sebelum dan sesudah reaksi adalah tetap.
-            
-            ---
-            **English:**
-            * **Stoichiometry:** Calculating quantities in chemical reactions.
-            * **Lavoisier's Law:** Mass is neither created nor destroyed.
-            """ if lang_code == "ID" or lang_code == "EN" else "" 
-            # Tips: Anda bisa memisahkan if/else total jika teksnya sangat panjang
-        ))
-        
-        # Contoh jika ingin membedakan total teks berdasarkan bahasa:
-        if lang_code == "ID":
-            st.info("💡 Tips: Pahami konsep Mol sebelum melanjut ke Molaritas.")
-        else:
-            st.info("💡 Tip: Understand the Mole concept before proceeding to Molarity.")
-
-    # TAB 2: KIMIA ORGANIK
+        make_card_start()
+        st.markdown("### Stoikiometri\nIlmu yang mempelajari hubungan kuantitatif zat.")
+        make_card_end()
     with tabs[1]:
-        make_glass_card(lambda: st.markdown("""
-        ### 🌿 Gugus Fungsi (Functional Groups)
-        
-        1. **Alkohol (-OH)**: Methanol, Ethanol.
-        2. **Aldehid (-COH)**: Formalin.
-        3. **Asam Karboksilat (-COOH)**: Asam cuka.
-        """))
+        make_card_start()
+        st.markdown("### Gugus Fungsi\nAlkohol, Aldehid, Keton, dll.")
+        make_card_end()
 
-    # TAB 3: KIMIA ANORGANIK
-    with tabs[2]:
-        make_glass_card(lambda: st.markdown("""
-        ### 💎 Logam Transisi
-        Logam transisi sering digunakan sebagai katalis dalam sintesis nanopartikel.
-        Contoh: **Emas (Au)**, **Perak (Ag)**, **Seng (Zn)**.
-        """))
 
-    # TAB 4: KIMIA PANGAN
-    with tabs[3]:
-        # -----------------------------------------------
-        # ANDA BISA MENYISIPKAN MATERI BARU DI SINI
-        # -----------------------------------------------
-        make_glass_card(lambda: st.markdown("""
-        ### 🍞 Reaksi Kimia pada Pangan
-        
-        * **Reaksi Maillard:** Reaksi pencoklatan antara gula pereduksi dan asam amino (memberi rasa enak pada roti/daging bakar).
-        * **Karamelisasi:** Oksidasi gula pada suhu tinggi.
-        * **Emulsi:** Campuran dua cairan yang tidak saling larut (contoh: Santan, Mayones).
-        """))
+# 4. MENU ABOUT
+elif menu == "👤 About":
+    st.title("👤 Tentang Aplikasi")
+    make_card_start()
+    st.write("**NanoTools Pro v1.0**")
+    st.write("Dikembangkan untuk membantu mahasiswa dan praktisi pangan.")
+    make_card_end()
 
 # =============================
-# MENU 4: COPILOT
+# FOOTER
 # =============================
-elif selected_menu == t["menu_opts"][3]:
-    st.title("🤖 Ask Copilot")
-    st.write("Current Language: " + lang_choice)
-    # (Logika chat sama seperti sebelumnya)
-
-# =============================
-# MENU 5: ABOUT
-# =============================
-elif selected_menu == t["menu_opts"][4]:
-    st.title("👤 About")
-    st.write("Developed by Food Technologist.")
+st.markdown("---")
+st.markdown("<p style='text-align: center; color: white;'>Developed with ❤️ using NanoTools 2025</p>", unsafe_allow_html=True)
