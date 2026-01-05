@@ -1,183 +1,132 @@
 import streamlit as st
-import math
-import pandas as pd # Perlu import pandas untuk grafik dummy
-import numpy as np  # Perlu import numpy untuk grafik dummy
+import streamlit.components.v1 as components
+import py3Dmol
+import pandas as pd
 
 # =============================
-# KONFIGURASI HALAMAN
+# 1. KONFIGURASI & CSS (FIXED)
 # =============================
-st.set_page_config(
-    page_title="NanoTools",
-    page_icon="🧬",
-    layout="centered",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="Atomic Module 4K", layout="wide")
 
-# =============================
-# CSS CUSTOM THEME & BACKGROUND
-# =============================
 st.markdown("""
 <style>
-/* Background & Animasi */
-.stApp {
-    background: linear-gradient(-45deg, #360185, #8F0177, #DE1A58, #F4B342);
-    background-size: 400% 400%;
-    animation: gradient 15s ease infinite;
-}
-@keyframes gradient {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
-}
-/* Card Style */
-div.css-1r6slb0.e1tzin5v2 {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.card {
-    background: rgba(255, 255, 255, 0.85);
-    padding: 25px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    margin-bottom: 25px;
-}
-.card-header {
-    color: #360185;
-    font-weight: bold;
-    font-size: 1.3rem;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #DE1A58;
-    padding-bottom: 5px;
-}
-/* Typography */
-h1, h2, h3 {
-    color: #ffffff !important;
-    text-shadow: 2px 2px 4px #000000;
-    text-align: center;
-}
-/* Button */
-.stButton>button {
-    background-color: #360185;
-    color: white;
-    border-radius: 10px;
-    width: 100%;
-}
+    .stApp { background: #000814; color: #E0E0E0; }
+    .card {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid #00D2FF;
+        backdrop-filter: blur(10px);
+    }
+    .card-header {
+        color: #00D2FF;
+        font-size: 2rem;
+        font-weight: bold;
+        border-bottom: 2px solid #00D2FF;
+        margin-bottom: 20px;
+    }
+    .label-accent { color: #00D2FF; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
 # =============================
-# HEADER APLIKASI
+# 2. DATASET 118 UNSUR
 # =============================
-st.markdown("<h1>🧬 NanoTools <span style='color:#F4B342'>Pro</span></h1>", unsafe_allow_html=True)
-st.markdown("<h3>Integrated System for Nanotech</h3>", unsafe_allow_html=True)
-st.markdown("---")
+DATA_URL = "https://raw.githubusercontent.com/dataprotocols/periodic-table/master/data/periodic-table.csv"
+
+@st.cache_data
+def load_data():
+    # Memuat data tabel periodik 118 unsur
+    df = pd.read_csv(DATA_URL)
+    return df
+
+df = load_data()
 
 # =============================
-# FUNGSI UTILITAS
+# 3. FUNGSI RENDER 3D
 # =============================
-def make_card_start():
+def render_atomic_3d(symbol):
+    # Membuat model unit sel sederhana (FCC) untuk visualisasi atom
+    xyz = f"4\n\n{symbol} 0 0 0\n{symbol} 2 2 0\n{symbol} 2 0 2\n{symbol} 0 2 2"
+    view = py3Dmol.view(width=700, height=500)
+    view.addModel(xyz, 'xyz')
+    view.setStyle({
+        'sphere': {'colorscheme': 'Jmol', 'scale': 0.5},
+        'stick': {'radius': 0.15}
+    })
+    view.zoomTo()
+    view.setBackgroundColor('rgba(0,0,0,0)')
+    view.spin(True, 0.4)
+    return view.render()
+
+# =============================
+# 4. ANTARMUKA UTAMA
+# =============================
+st.markdown("<h1 style='text-align: center;'>⚛️ Modul Atom & Struktur Materi</h1>", unsafe_allow_html=True)
+st.write("---")
+
+# Pencarian Unsur (Dropdown dengan 118 Nama)
+search_options = [f"{row['atomicnumber']}. {row['name']} ({row['symbol']})" for _, row in df.iterrows()]
+selected_element = st.selectbox("🔍 Cari Unsur (Nomor Atom atau Nama):", search_options)
+
+# Ambil data spesifik unsur
+target_idx = int(selected_search.split('.')[0]) - 1 if 'selected_search' in locals() else int(selected_element.split('.')[0]) - 1
+el = df.iloc[target_idx]
+
+col_viz, col_data = st.columns([1.5, 1])
+
+with col_data:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown(f"<div class='card-header'>{el['symbol']} - {el['name']}</div>", unsafe_allow_html=True)
+    
+    # Grid Data Unsur
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(f"<p><span class='label-accent'>Nomor Atom:</span><br>{el['atomicnumber']}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p><span class='label-accent'>Massa Atom:</span><br>{el['atomicmass']} u</p>", unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"<p><span class='label-accent'>Golongan:</span><br>{el['group']}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p><span class='label-accent'>Periode:</span><br>{el['period']}</p>", unsafe_allow_html=True)
+    
+    st.markdown(f"<p><span class='label-accent'>Konfigurasi:</span><br><code>{el['electronicconfiguration']}</code></p>", unsafe_allow_html=True)
+    
+    st.write("---")
+    # Link Google Drive / Literatur Dinamis
+    drive_url = f"https://www.google.com/search?q=journal+nanotechnology+{el['name']}"
+    st.link_button(f"📚 Buka Literatur {el['name']}", url=drive_url, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-def make_card_end():
+with col_viz:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    # Tampilkan Viewer 3D
+    obj_3d = render_atomic_3d(el['symbol'])
+    components.html(obj_3d, height=520)
+    st.markdown(f"<p style='text-align:center;'>Visualisasi Struktur Kisi Atom {el['name']}</p>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =============================
-# SIDEBAR (NAVIGASI DIPERBAIKI)
+# 5. MATERI TEORI (FOOTER)
 # =============================
-with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3053/3053984.png", width=100)
-    st.title("Menu NanoTools")
+st.write("---")
+st.markdown("### 📘 Pendalaman Materi Atom")
+
+
+
+[Image of the periodic table of elements]
+
+
+tab_teori, tab_tren = st.tabs(["Struktur Dasar", "Tren Periodik"])
+
+with tab_teori:
+    st.write(f"""
+    Unsur **{el['name']}** memiliki konfigurasi elektron `{el['electronicconfiguration']}`. 
+    Dalam nanoteknologi, posisi elektron pada orbital terluar menentukan bagaimana atom ini 
+    akan membentuk ikatan kovalen atau logam pada nanopartikel.
+    """)
     
-    # PERBAIKAN 1: Menambahkan semua opsi menu ke dalam list ini
-    menu = st.radio(
-        "Pilih Menu:",
-        [
-            "📈 Insight",
-            "🔬 Lab Nanoteknologi", 
-            "🛠 Tools",  
-            "👤 About"
-        ]
-    )
-    
-    st.markdown("---")
-    st.info("Aplikasi formulasi nanoteknologi.")
 
-# =============================
-# LOGIKA HALAMAN (IF - ELIF)
-# =============================
-
-# 1. MODUL NANOTEKNOLOGI
-if menu == "🔬 Lab Nanoteknologi":
-    st.markdown("## 🧪 Perhitungan Laboratorium")
-    
-    # Kalkulator Molaritas
-    make_card_start()
-    st.markdown("<div class='card-header'>⚖️ Kalkulator Molaritas</div>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        molaritas = st.number_input("Molaritas (M)", 0.0, step=0.1)
-        volume_l = st.number_input("Volume (Liter)", 0.0, step=0.1)
-    with col2:
-        mr = st.number_input("Berat Molekul (MR)", 0.0, step=0.1)
-    if st.button("Hitung Massa"):
-        st.success(f"Massa: **{molaritas * volume_l * mr:.4f} gram**")
-    make_card_end()
+[Image of electron shells and energy levels]
 
 
-# ==========================================
-# PERBAIKAN 2: Menggunakan variabel 'menu' 
-# dan string biasa, bukan 'selected_menu' 
-# atau 't["..."]' yang error.
-# ==========================================
-
-# 1. MENU INSIGHT
-elif menu == "📈 Insight":
-    st.title("🔬 Nanoparticle Insight")
-    st.write("Data tren penelitian nanoteknologi terkini.")
-    # Contoh grafik dummy
-    chart_data = pd.DataFrame(np.random.randn(20, 3), columns=['A', 'B', 'C'])
-    st.line_chart(chart_data)
-
-# 2. LAB NANOTEKNOLOGI
-elif menu == "🛠 Tools":
-    st.title("🛠 Extra Tools")
-    tab1, tab2 = st.tabs(["🧬 Nano Tools", "🍽️ Food Tools"])
-    with tab1:
-        make_card_start()
-        st.write("Kalkulator tambahan Nanoteknologi akan muncul di sini.")
-        make_card_end()
-    with tab2:
-        make_card_start()
-        st.write("Konverter unit pangan akan muncul di sini.")
-        make_card_end()
-
-
-# 3. TOOLS
-elif menu == "📚 Tools":
-    st.title("📚 Pusat Belajar")
-    tabs = st.tabs(["⚗️ Kimia Dasar", "🌿 Organik", "💎 Anorganik"])
-    
-    with tabs[0]:
-        make_card_start()
-        st.markdown("### Stoikiometri\nIlmu yang mempelajari hubungan kuantitatif zat.")
-        make_card_end()
-    with tabs[1]:
-        make_card_start()
-        st.markdown("### Gugus Fungsi\nAlkohol, Aldehid, Keton, dll.")
-        make_card_end()
-
-
-# 4. MENU ABOUT
-elif menu == "👤 About":
-    st.title("👤 Tentang Aplikasi")
-    make_card_start()
-    st.write("**NanoTools Pro v1.0**")
-    st.write("Dikembangkan untuk membantu mahasiswa dan praktisi pangan.")
-    make_card_end()
-
-# =============================
-# FOOTER
-# =============================
-st.markdown("---")
-st.markdown("<p style='text-align: center; color: white;'>Developed with ❤️ using NanoTools 2025</p>", unsafe_allow_html=True)
+with tab_tren:
+    st.info(f"Unsur ini berada pada Periode {el['period']} dan Golongan {el['group']}. Hal ini memengaruhi energi ionisasi dan jari-jari atomnya.")
